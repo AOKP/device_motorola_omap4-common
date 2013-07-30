@@ -412,7 +412,7 @@ def WriteFullOTAPackage(input_zip, output_zip):
 
   if not OPTIONS.no_assert:
     #AppendAssertions(script, OPTIONS.info_dict)
-    device_specific.FullOTA_Assertions()
+  device_specific.FullOTA_Assertions()
 
   device_specific.FullOTA_InstallBegin()
 
@@ -426,15 +426,16 @@ def WriteFullOTAPackage(input_zip, output_zip):
   if OPTIONS.wipe_user_data:
     script.FormatPartition("/data")
 
-  script.Print("****************************************");
-  script.Print("*    ______  _____   __  __   _____    *");
-  script.Print("*   /\\  _  \\/\\  __`\\/\\ \\/\\ \\ /\\  _ `\\  *");
-  script.Print("*   \\ \\ \\L\\ \\ \\ \\/\\ \\ \\ \\/'/'\\ \\ \\L\\ \\ *");
-  script.Print("*    \\ \\  __ \\ \\ \\ \\ \\ \\ , <  \\ \\ ,__/ *");
-  script.Print("*     \\ \\ \\/\\ \\ \\ \\_\\ \\ \\ \\\\\\`\\ \\ \\ \\/  *");
-  script.Print("*      \\ \\_\\ \\_\\ \\_____\\ \\_\\ \\_\\\\\\ \\_\\  *");
-  script.Print("*       \\/_/\\/_/\\/_____/\\/_/\\/_/ \\/_/  *");
-  script.Print("****************************************");
+  script.Print("******************************************");
+  script.Print("*    ______  _____   __  __   _____      *");
+  script.Print("*   /\\  _  \\/\\  __`\\/\\ \\/\\ \\ /\\  _ `\\    *");
+  script.Print("*   \\ \\ \\L\\ \\ \\ \\/\\ \\ \\ \\/'/'\\ \\ \\L\\ \\   *");
+  script.Print("*    \\ \\  __ \\ \\ \\ \\ \\ \\ , <  \\ \\ ,__/   *");
+  script.Print("*     \\ \\ \\/\\ \\ \\ \\_\\ \\ \\ \\\\\\`\\ \\ \\ \\/    *");
+  script.Print("*      \\ \\_\\ \\_\\ \\_____\\ \\_\\ \\_\\\\\\ \\_\\    *");
+  script.Print("*       \\/_/\\/_/\\/_____/\\/_/\\/_/ \\/_/    *");
+  script.Print("*                                        *");
+  script.Print("******************************************");
 
   aokpv = GetBuildProp("ro.aokp.version", OPTIONS.info_dict)
   if os.getenv("AOKP_BUILD") is not None:
@@ -455,8 +456,8 @@ def WriteFullOTAPackage(input_zip, output_zip):
   script.Print("*   Device: %s (%s)"%(model, device));
   script.Print("******************************************");
 
-#  if "selinux_fc" in OPTIONS.info_dict:
-#    WritePolicyConfig(OPTIONS.info_dict["selinux_fc"], output_zip)
+  if "selinux_fc" in OPTIONS.info_dict:
+    WritePolicyConfig(OPTIONS.info_dict["selinux_fc"], output_zip)
 
   if OPTIONS.persist:
     script.Mount("/system")
@@ -865,6 +866,15 @@ def main(argv):
 
   OPTIONS.target_tmp = OPTIONS.input_tmp
   OPTIONS.info_dict = common.LoadInfoDict(input_zip)
+
+  # If this image was originally labelled with SELinux contexts, make sure we
+  # also apply the labels in our new image. During building, the "file_contexts"
+  # is in the out/ directory tree, but for repacking from target-files.zip it's
+  # in the root directory of the ramdisk.
+  if "selinux_fc" in OPTIONS.info_dict:
+    OPTIONS.info_dict["selinux_fc"] = os.path.join(OPTIONS.input_tmp, "BOOT", "RAMDISK",
+        "file_contexts")
+
   if OPTIONS.verbose:
     print "--- target info ---"
     common.DumpInfoDict(OPTIONS.info_dict)
