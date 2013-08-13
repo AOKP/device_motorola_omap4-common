@@ -464,10 +464,6 @@ def WriteFullOTAPackage(input_zip, output_zip):
     script.RunPersist("save")
     script.Unmount("/system")
 
-  script.Mount("/cache");
-  script.DeleteRecursive("/cache");
-  script.Mount("/data")  
-  script.DeleteRecursive("/data/dalvik-cache")
   script.Mount("/system")
   script.DeleteRecursive("/system")
   script.UnpackPackageDir("system", "/system")
